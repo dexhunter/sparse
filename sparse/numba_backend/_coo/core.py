@@ -1396,7 +1396,13 @@ class COO(SparseArray, NDArrayOperatorsMixin):  # lgtm [py/missing-equals]
             return
 
         order = np.argsort(linear, kind="mergesort")
-        self.coords = self.coords[:, order]
+        if type(self.coords) is np.ndarray:
+            coords = np.empty(self.coords.shape, dtype=self.coords.dtype)
+            for axis in range(self.coords.shape[0]):
+                np.take(self.coords[axis], order, out=coords[axis], mode="clip")
+            self.coords = coords
+        else:
+            self.coords = self.coords[:, order]
         self.data = self.data[order]
 
     def _sum_duplicates(self):
